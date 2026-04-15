@@ -1,0 +1,14 @@
+{
+  "project": "SalesCoach",
+  "phase": "0-server",
+  "steps": [
+    { "step": 0, "name": "project-setup", "status": "pending" },
+    { "step": 1, "name": "server-init", "status": "pending" },
+    { "step": 2, "name": "server-types", "status": "pending" },
+    { "step": 3, "name": "server-lib", "status": "pending" },
+    { "step": 4, "name": "server-middleware", "status": "pending" },
+    { "step": 5, "name": "server-auth", "status": "pending" },
+    { "step": 6, "name": "server-stt", "status": "pending" },
+    { "step": 7, "name": "server-coaching", "status": "pending" }
+  ]
+}

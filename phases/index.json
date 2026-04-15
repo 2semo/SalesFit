@@ -1,0 +1,12 @@
+{
+  "phases": [
+    {
+      "dir": "0-server",
+      "status": "pending"
+    },
+    {
+      "dir": "1-mobile",
+      "status": "pending"
+    }
+  ]
+}

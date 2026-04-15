@@ -1,0 +1,13 @@
+{
+  "project": "SalesCoach",
+  "phase": "1-mobile",
+  "steps": [
+    { "step": 0, "name": "mobile-init", "status": "pending" },
+    { "step": 1, "name": "mobile-foundation", "status": "pending" },
+    { "step": 2, "name": "mobile-store", "status": "pending" },
+    { "step": 3, "name": "mobile-services", "status": "pending" },
+    { "step": 4, "name": "mobile-hooks", "status": "pending" },
+    { "step": 5, "name": "mobile-components", "status": "pending" },
+    { "step": 6, "name": "mobile-screens", "status": "pending" }
+  ]
+}
