@@ -15,7 +15,7 @@
       "name": "auth-flow",
       "status": "completed",
       "started_at": "2026-04-18T00:13:07+0900",
-      "completed_at": "2026-04-18T00:30:00+0900",
+      "completed_at": "2026-04-18T00:15:39+0900",
       "summary": "authService (signIn/signOut/getCurrentUser), LoginScreen, app/login.tsx 생성. 로그인 후 role 기반 라우팅 (consultant→홈, admin→/admin) 구현."
     },
     {
