@@ -47,7 +47,8 @@
       "name": "report-screen",
       "status": "completed",
       "started_at": "2026-04-17T21:26:59+0900",
-      "summary": "storageService, ReportScreen, ReportSection 컴포넌트 생성. 4개 항목 리포트 표시, AsyncStorage 저장, 점수별 색상 처리."
+      "summary": "storageService, ReportScreen, ReportSection 컴포넌트 생성. 4개 항목 리포트 표시, AsyncStorage 저장, 점수별 색상 처리.",
+      "completed_at": "2026-04-17T21:31:18+0900"
     },
     {
       "step": 6,
