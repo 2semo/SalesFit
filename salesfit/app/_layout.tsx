@@ -1,7 +1,20 @@
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import React, { useEffect } from 'react';
+
+import { authService } from '../src/services/authService';
 
 export default function RootLayout() {
+  useEffect(() => {
+    async function checkAuth() {
+      const user = await authService.getCurrentUser();
+      if (!user) {
+        router.replace('/login');
+      }
+    }
+    void checkAuth();
+  }, []);
+
   return (
     <>
       <StatusBar style="light" />
@@ -16,6 +29,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="session" />
         <Stack.Screen name="report" />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
       </Stack>
     </>
   );

@@ -52,3 +52,11 @@ export interface StoredConsultation {
   reportSummary: string;
   hasReport: boolean;
 }
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  role: 'consultant' | 'admin';
+  createdAt: string;
+}
