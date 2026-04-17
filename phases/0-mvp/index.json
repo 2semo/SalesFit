@@ -1,0 +1,44 @@
+{
+  "project": "SalesFit",
+  "phase": "0-mvp",
+  "steps": [
+    {
+      "step": 0,
+      "name": "project-setup",
+      "status": "completed",
+      "started_at": "2026-04-17T17:58:53+0900",
+      "summary": "Expo TypeScript 프로젝트 초기화 완료. salesfit/ 디렉토리, src/ 구조, expo-av/Gemini 의존성, 환경변수 템플릿 생성."
+    },
+    {
+      "step": 1,
+      "name": "core-types",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "audio-service",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "gemini-service",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "name": "session-screen",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "name": "report-screen",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "name": "home-navigation",
+      "status": "pending"
+    }
+  ],
+  "created_at": "2026-04-17T17:58:53+0900"
+}
