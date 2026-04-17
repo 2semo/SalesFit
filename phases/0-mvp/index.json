@@ -16,7 +16,7 @@
       "status": "completed",
       "started_at": "2026-04-17T18:05:57+0900",
       "summary": "src/types/index.ts 생성. Consultation, TranscriptSegment, CoachingMessage, ReviewReport, StoredConsultation 등 7개 타입/인터페이스 정의 완료.",
-      "completed_at": "2026-04-17T18:10:00+0900"
+      "completed_at": "2026-04-17T18:07:08+0900"
     },
     {
       "step": 2,
