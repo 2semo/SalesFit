@@ -21,7 +21,10 @@
     {
       "step": 2,
       "name": "supabase-service",
-      "status": "pending"
+      "status": "error",
+      "started_at": "2026-04-18T00:15:39+0900",
+      "error_message": "[3회 시도 후 실패] Step did not update status",
+      "failed_at": "2026-04-18T00:18:48+0900"
     },
     {
       "step": 3,
