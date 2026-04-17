@@ -31,7 +31,8 @@
       "name": "gemini-service",
       "status": "completed",
       "started_at": "2026-04-17T18:29:04+0900",
-      "summary": "src/services/geminiService.ts 생성. GeminiService 클래스 (STT, 코칭 팁, 복기 리포트). JSON 파싱 안전 처리, 에러 시 기본값 반환. 유닛 테스트 8개 통과."
+      "summary": "src/services/geminiService.ts 생성. GeminiService 클래스 (STT, 코칭 팁, 복기 리포트). JSON 파싱 안전 처리, 에러 시 기본값 반환. 유닛 테스트 8개 통과.",
+      "completed_at": "2026-04-17T18:35:10+0900"
     },
     {
       "step": 4,
