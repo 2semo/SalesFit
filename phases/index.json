@@ -4,6 +4,11 @@
       "dir": "0-mvp",
       "status": "completed",
       "completed_at": "2026-04-17T21:34:23+0900"
+    },
+    {
+      "dir": "1-admin-dashboard",
+      "status": "blocked",
+      "blocked_at": "2026-04-18T00:04:56+0900"
     }
   ]
 }
