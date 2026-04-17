@@ -30,6 +30,8 @@ export default function RootLayout() {
         <Stack.Screen name="session" />
         <Stack.Screen name="report" />
         <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="admin" options={{ headerShown: false }} />
+        <Stack.Screen name="admin-detail" options={{ headerShown: false }} />
       </Stack>
     </>
   );

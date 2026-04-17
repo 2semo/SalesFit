@@ -7,8 +7,9 @@
     },
     {
       "dir": "1-admin-dashboard",
-      "status": "blocked",
-      "blocked_at": "2026-04-18T00:04:56+0900"
+      "status": "error",
+      "blocked_at": "2026-04-18T00:04:56+0900",
+      "failed_at": "2026-04-18T00:18:48+0900"
     }
   ]
 }
