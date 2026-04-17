@@ -1,0 +1,64 @@
+{
+  "project": "SalesFit",
+  "phase": "0-mvp",
+  "steps": [
+    {
+      "step": 0,
+      "name": "project-setup",
+      "status": "completed",
+      "started_at": "2026-04-17T17:58:53+0900",
+      "summary": "Expo TypeScript 프로젝트 초기화 완료. salesfit/ 디렉토리, src/ 구조, expo-av/Gemini 의존성, 환경변수 템플릿 생성.",
+      "completed_at": "2026-04-17T18:05:56+0900"
+    },
+    {
+      "step": 1,
+      "name": "core-types",
+      "status": "completed",
+      "started_at": "2026-04-17T18:05:57+0900",
+      "summary": "src/types/index.ts 생성. Consultation, TranscriptSegment, CoachingMessage, ReviewReport, StoredConsultation 등 7개 타입/인터페이스 정의 완료.",
+      "completed_at": "2026-04-17T18:07:08+0900"
+    },
+    {
+      "step": 2,
+      "name": "audio-service",
+      "status": "completed",
+      "started_at": "2026-04-17T18:07:08+0900",
+      "summary": "src/services/audioService.ts 생성. AudioService 클래스 (15초 청크 녹음, 권한 요청, start/stop). 유닛 테스트 3개 통과. jest.config.js 수정 (testEnvironment: node, setupFilesAfterEnv), babel.config.js 및 expo winter lazy getter 중화 픽스 포함.",
+      "completed_at": "2026-04-17T18:29:04+0900"
+    },
+    {
+      "step": 3,
+      "name": "gemini-service",
+      "status": "completed",
+      "started_at": "2026-04-17T18:29:04+0900",
+      "summary": "src/services/geminiService.ts 생성. GeminiService 클래스 (STT, 코칭 팁, 복기 리포트). JSON 파싱 안전 처리, 에러 시 기본값 반환. 유닛 테스트 8개 통과.",
+      "completed_at": "2026-04-17T18:35:10+0900"
+    },
+    {
+      "step": 4,
+      "name": "session-screen",
+      "status": "completed",
+      "started_at": "2026-04-17T21:25:01+0900",
+      "summary": "useConsultation 훅, SessionScreen, CoachingCard 컴포넌트 생성. 녹음 제어, 실시간 자막, 코칭 팁 표시 구현.",
+      "completed_at": "2026-04-17T21:26:59+0900"
+    },
+    {
+      "step": 5,
+      "name": "report-screen",
+      "status": "completed",
+      "started_at": "2026-04-17T21:26:59+0900",
+      "summary": "storageService, ReportScreen, ReportSection 컴포넌트 생성. 4개 항목 리포트 표시, AsyncStorage 저장, 점수별 색상 처리.",
+      "completed_at": "2026-04-17T21:31:18+0900"
+    },
+    {
+      "step": 6,
+      "name": "home-navigation",
+      "status": "completed",
+      "started_at": "2026-04-17T21:31:19+0900",
+      "summary": "HomeScreen, ConsultationHistoryItem 생성. Expo Router 네비게이션 (홈→상담→리포트) 완성. 다크 테마 전체 적용. 전체 테스트 통과.",
+      "completed_at": "2026-04-17T21:34:22+0900"
+    }
+  ],
+  "created_at": "2026-04-17T17:58:53+0900",
+  "completed_at": "2026-04-17T21:34:23+0900"
+}

@@ -1,0 +1,38 @@
+{
+  "project": "SalesFit",
+  "phase": "1-admin-dashboard",
+  "steps": [
+    {
+      "step": 0,
+      "name": "supabase-setup",
+      "status": "completed",
+      "started_at": "2026-04-18T00:02:09+0900",
+      "summary": "@supabase/supabase-js 설치, src/lib/supabase.ts 생성, DB 스키마 3개 테이블 생성 (profiles, consultations, consultation_reports), RLS 정책 설정 완료.",
+      "completed_at": "2026-04-18T00:05:00+0900"
+    },
+    {
+      "step": 1,
+      "name": "auth-flow",
+      "status": "completed",
+      "started_at": "2026-04-18T00:13:07+0900",
+      "completed_at": "2026-04-18T00:15:39+0900",
+      "summary": "authService (signIn/signOut/getCurrentUser), LoginScreen, app/login.tsx 생성. 로그인 후 role 기반 라우팅 (consultant→홈, admin→/admin) 구현."
+    },
+    {
+      "step": 2,
+      "name": "supabase-service",
+      "status": "completed",
+      "started_at": "2026-04-18T00:15:39+0900",
+      "summary": "storageService를 Supabase 기반으로 교체. consultations + consultation_reports 테이블 저장/조회. 기존 인터페이스 유지로 다른 파일 변경 없음.",
+      "completed_at": "2026-04-18T00:18:48+0900"
+    },
+    {
+      "step": 3,
+      "name": "admin-dashboard",
+      "status": "completed",
+      "summary": "adminService, AdminDashboardScreen, ConsultantDetailScreen 생성. 관리자 대시보드 (전체현황, 상담원별통계, 리포트열람) 구현. app/admin.tsx, app/admin-detail.tsx 라우트 추가.",
+      "completed_at": "2026-04-18T00:30:00+0900"
+    }
+  ],
+  "created_at": "2026-04-18T00:02:09+0900"
+}
