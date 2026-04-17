@@ -1,3 +1,21 @@
+jest.mock('../../services/audioService', () => ({
+  audioService: {
+    requestPermissions: jest.fn(),
+    startRecording: jest.fn(),
+    stopRecording: jest.fn(),
+    isRecording: false,
+    elapsedMs: 0,
+  },
+}));
+
+jest.mock('../../services/geminiService', () => ({
+  geminiService: {
+    transcribeAudio: jest.fn(),
+    getCoachingTips: jest.fn(),
+    generateReport: jest.fn(),
+  },
+}));
+
 import { consultationReducer } from '../useConsultation';
 import type { ConsultationState } from '../useConsultation';
 
