@@ -131,10 +131,10 @@ export function useConsultation(): ConsultationState & ConsultationActions {
       }
     }, 1000);
 
-    await audioService.startRecording(async (chunkUri: string, chunkIndex: number) => {
+    await audioService.startRecording(async (chunkBase64: string, chunkIndex: number) => {
       dispatch({ type: 'SET_PROCESSING', payload: true });
       try {
-        const segment = await geminiService.transcribeAudio(chunkUri, chunkIndex);
+        const segment = await geminiService.transcribeAudio(chunkBase64, chunkIndex);
         dispatch({ type: 'ADD_TRANSCRIPT', payload: segment });
 
         if (segment.text.trim()) {

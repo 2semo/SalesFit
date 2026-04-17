@@ -1,66 +1,43 @@
-import { Audio } from 'expo-av';
-
 const CHUNK_DURATION_MS = 15_000;
 
 class AudioService {
   private _isRecording = false;
   private _startTime: number | null = null;
-  private _recording: Audio.Recording | null = null;
-  private _chunkInterval: ReturnType<typeof setInterval> | null = null;
+  private _mediaRecorder: MediaRecorder | null = null;
+  private _stream: MediaStream | null = null;
   private _chunkIndex = 0;
-  private _onChunkReady: ((chunkUri: string, chunkIndex: number) => void) | null = null;
+  private _onChunkReady: ((chunkBase64: string, chunkIndex: number) => void) | null = null;
 
   async requestPermissions(): Promise<boolean> {
-    const { status } = await Audio.requestPermissionsAsync();
-    return status === 'granted';
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((t) => t.stop());
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async startRecording(
-    onChunkReady: (chunkUri: string, chunkIndex: number) => void,
+    onChunkReady: (chunkBase64: string, chunkIndex: number) => void,
   ): Promise<void> {
     if (this._isRecording) return;
 
+    this._stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     this._isRecording = true;
     this._startTime = Date.now();
     this._chunkIndex = 0;
     this._onChunkReady = onChunkReady;
 
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: true,
-      playsInSilentModeIOS: true,
-    });
-
-    await this._startNewRecording();
-
-    this._chunkInterval = setInterval(() => {
-      void this._rotateChunk();
-    }, CHUNK_DURATION_MS);
+    this._startMediaRecorder();
   }
 
   async stopRecording(): Promise<void> {
-    if (this._chunkInterval !== null) {
-      clearInterval(this._chunkInterval);
-      this._chunkInterval = null;
-    }
-
-    if (this._recording !== null) {
-      try {
-        const recording = this._recording;
-        this._recording = null;
-        await recording.stopAndUnloadAsync();
-        const uri = recording.getURI();
-        if (uri !== null && this._onChunkReady !== null) {
-          this._onChunkReady(uri, this._chunkIndex++);
-        }
-      } catch (error) {
-        console.error('AudioService: stop recording error', error);
-      }
-    }
-
     this._isRecording = false;
-    this._startTime = null;
-    this._onChunkReady = null;
-    this._chunkIndex = 0;
+
+    if (this._mediaRecorder && this._mediaRecorder.state !== 'inactive') {
+      this._mediaRecorder.stop();
+    }
   }
 
   get isRecording(): boolean {
@@ -72,31 +49,55 @@ class AudioService {
     return Date.now() - this._startTime;
   }
 
-  private async _startNewRecording(): Promise<void> {
-    const { recording } = await Audio.Recording.createAsync(
-      Audio.RecordingOptionsPresets.HIGH_QUALITY,
-    );
-    this._recording = recording;
-  }
+  private _startMediaRecorder(): void {
+    if (!this._stream) return;
 
-  private async _rotateChunk(): Promise<void> {
-    if (this._recording === null) return;
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? 'audio/webm;codecs=opus'
+      : 'audio/webm';
 
-    try {
-      const recording = this._recording;
-      this._recording = null;
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-      if (uri !== null && this._onChunkReady !== null) {
-        this._onChunkReady(uri, this._chunkIndex++);
-      }
+    const recorder = new MediaRecorder(this._stream, { mimeType });
+    this._mediaRecorder = recorder;
+
+    const chunks: Blob[] = [];
+
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) chunks.push(e.data);
+    };
+
+    recorder.onstop = () => {
+      if (chunks.length === 0) return;
+
+      const blob = new Blob(chunks, { type: mimeType });
+      const index = this._chunkIndex++;
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1];
+        if (base64 && this._onChunkReady) {
+          this._onChunkReady(base64, index);
+        }
+      };
+      reader.readAsDataURL(blob);
+
+      // 녹음 중이면 다음 청크 시작
       if (this._isRecording) {
-        await this._startNewRecording();
+        chunks.length = 0;
+        this._startMediaRecorder();
+      } else {
+        this._stream?.getTracks().forEach((t) => t.stop());
+        this._stream = null;
+        this._startTime = null;
+        this._onChunkReady = null;
+        this._chunkIndex = 0;
       }
-    } catch (error) {
-      console.error('AudioService: chunk rotation error', error);
-      this._isRecording = false;
-    }
+    };
+
+    recorder.start();
+    setTimeout(() => {
+      if (recorder.state === 'recording') recorder.stop();
+    }, CHUNK_DURATION_MS);
   }
 }
 

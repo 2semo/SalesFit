@@ -1,21 +1,19 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { readAsStringAsync } from 'expo-file-system/legacy';
 
+import { PRODUCT_GUIDE } from '../assets/guides/productGuide';
 import type { CoachingMessage, ReviewReport, TranscriptSegment } from '../types';
 
 const genAI = new GoogleGenerativeAI(process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? '');
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
 class GeminiService {
-  async transcribeAudio(audioUri: string, chunkIndex: number): Promise<TranscriptSegment> {
+  async transcribeAudio(chunkBase64: string, chunkIndex: number): Promise<TranscriptSegment> {
     try {
-      const base64Audio = await readAsStringAsync(audioUri, { encoding: 'base64' });
-
       const result = await model.generateContent([
         {
           inlineData: {
-            data: base64Audio,
-            mimeType: 'audio/m4a',
+            data: chunkBase64,
+            mimeType: 'audio/webm',
           },
         },
         '이 오디오를 한국어로 전사하라. 텍스트만 반환하라.',
@@ -42,15 +40,20 @@ class GeminiService {
 
   async getCoachingTips(transcript: string): Promise<CoachingMessage[]> {
     try {
-      const prompt = `당신은 가전제품 영업 코치입니다. 상담원의 대화를 분석해 즉시 적용 가능한 코칭 팁을 JSON 배열로 반환하세요.
+      const prompt = `당신은 롯데하이마트 가전제품 영업 코치입니다. 아래 제품 가이드를 참고해 상담원의 대화를 분석하고, 즉시 적용 가능한 코칭 팁을 JSON 배열로 반환하세요.
 
-대화 내용:
+[이번 주 제품 가이드]
+${PRODUCT_GUIDE}
+
+[상담 대화]
 ${transcript}
 
 반환 형식 (JSON 배열만 반환, 다른 텍스트 없이):
 [{ "type": "needs"|"product"|"closing"|"improvement", "title": "...", "message": "...", "suggestion": "..." }]
 
-코칭할 포인트가 없으면 [] 반환.`;
+- type 기준: needs(고객니즈파악), product(제품설명/추천), closing(클로징기회), improvement(개선필요)
+- suggestion은 가이드의 실제 모델명/가격/혜택을 활용한 구체적인 멘트로 작성
+- 코칭할 포인트가 없으면 [] 반환.`;
 
       const result = await model.generateContent(prompt);
       const text = result.response.text().trim();
@@ -100,9 +103,12 @@ ${transcript}
     };
 
     try {
-      const prompt = `당신은 가전제품 영업 코치입니다. 아래 상담 대화를 분석해 복기 리포트를 JSON으로 반환하세요.
+      const prompt = `당신은 롯데하이마트 가전제품 영업 코치입니다. 아래 제품 가이드와 상담 대화를 분석해 복기 리포트를 JSON으로 반환하세요.
 
-상담 대화:
+[이번 주 제품 가이드]
+${PRODUCT_GUIDE}
+
+[상담 대화]
 ${fullTranscript}
 
 반환 형식 (JSON만 반환, 다른 텍스트 없이):
