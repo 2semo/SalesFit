@@ -7,6 +7,7 @@
 - Google Gemini 1.5 Flash API (STT + AI 코칭 + 리포트)
 - expo-av (오디오 녹음)
 - AsyncStorage (로컬 데이터 저장)
+- Supabase (인증 + PostgreSQL DB)
 
 ## 아키텍처 규칙
 - CRITICAL: Gemini API 키는 반드시 .env 파일의 EXPO_PUBLIC_GEMINI_API_KEY 환경변수로만 관리한다. 코드에 하드코딩 금지.

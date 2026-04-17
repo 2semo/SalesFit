@@ -1,0 +1,29 @@
+{
+  "project": "SalesFit",
+  "phase": "1-admin-dashboard",
+  "steps": [
+    {
+      "step": 0,
+      "name": "supabase-setup",
+      "status": "blocked",
+      "started_at": "2026-04-18T00:02:09+0900",
+      "blocked_reason": "Supabase DB 스키마(profiles, consultations, consultation_reports 테이블 + RLS 정책 + 트리거) 생성을 Supabase 대시보드 SQL Editor에서 수동으로 실행해야 합니다. 코드 작업(@supabase/supabase-js 설치, src/lib/supabase.ts 생성, .env.example 업데이트, CLAUDE.md 업데이트, tsc --noEmit 통과)은 모두 완료되었습니다."
+    },
+    {
+      "step": 1,
+      "name": "auth-flow",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "supabase-service",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "admin-dashboard",
+      "status": "pending"
+    }
+  ],
+  "created_at": "2026-04-18T00:02:09+0900"
+}
