@@ -21,7 +21,9 @@
     {
       "step": 2,
       "name": "audio-service",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-04-17T18:07:08+0900",
+      "summary": "src/services/audioService.ts 생성. AudioService 클래스 (15초 청크 녹음, 권한 요청, start/stop). 유닛 테스트 3개 통과. jest.config.js 수정 (testEnvironment: node, setupFilesAfterEnv), babel.config.js 및 expo winter lazy getter 중화 픽스 포함."
     },
     {
       "step": 3,
