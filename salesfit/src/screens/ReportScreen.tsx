@@ -40,30 +40,62 @@ function getScoreColor(score: number): string {
 }
 
 export function ReportScreen(): React.JSX.Element {
-  const params = useLocalSearchParams<{ data: string }>();
+  const params = useLocalSearchParams<{
+    // New format (from SessionScreen)
+    consultationId?: string;
+    startedAt?: string;
+    endedAt?: string;
+    transcriptText?: string;
+    // Legacy format (from admin viewing — full JSON with pre-loaded report)
+    data?: string;
+  }>();
   const [report, setReport] = useState<ReviewReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [consultation, setConsultation] = useState<Consultation | null>(null);
+  const [pendingTranscript, setPendingTranscript] = useState<string>('');
   const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     async function generate() {
       try {
-        const parsed = JSON.parse(params.data) as Consultation;
-        setConsultation(parsed);
+        if (params.consultationId) {
+          // New path: minimal params from SessionScreen
+          const id = params.consultationId;
+          const startedAt = Number(params.startedAt);
+          const endedAt = Number(params.endedAt ?? Date.now());
+          const transcriptText = params.transcriptText ?? '';
 
-        const fullTranscript = parsed.transcript.map((s) => s.text).join('\n');
-        const durationMs = (parsed.endedAt ?? Date.now()) - parsed.startedAt;
+          const base: Consultation = {
+            id,
+            startedAt,
+            endedAt,
+            status: 'completed',
+            transcript: [],
+            coachingMessages: [],
+          };
+          setConsultation(base);
+          setPendingTranscript(transcriptText);
 
-        const generated = await geminiService.generateReport(fullTranscript, durationMs, parsed.id);
-        setReport(generated);
+          const durationMs = endedAt - startedAt;
+          const generated = await geminiService.generateReport(transcriptText, durationMs, id);
+          setReport(generated);
+          await storageService.saveConsultation({ ...base, report: generated });
+        } else {
+          // Legacy path: full consultation JSON (admin viewing — report already loaded)
+          const parsed = JSON.parse(params.data ?? '{}') as Consultation;
+          setConsultation(parsed);
 
-        const consultationWithReport: Consultation = {
-          ...parsed,
-          report: generated,
-        };
-        await storageService.saveConsultation(consultationWithReport);
+          if (parsed.report) {
+            setReport(parsed.report);
+          } else {
+            const fullTranscript = parsed.transcript.map((s) => s.text).join('\n');
+            const durationMs = (parsed.endedAt ?? Date.now()) - parsed.startedAt;
+            const generated = await geminiService.generateReport(fullTranscript, durationMs, parsed.id);
+            setReport(generated);
+            await storageService.saveConsultation({ ...parsed, report: generated });
+          }
+        }
       } catch (e) {
         setError('리포트 생성에 실패했습니다. 다시 시도해주세요.');
       } finally {
@@ -72,23 +104,19 @@ export function ReportScreen(): React.JSX.Element {
     }
 
     void generate();
-  }, [params.data]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleRetry = () => {
     setError(null);
     setReport(null);
     setLoading(true);
-    // Re-trigger by re-running the effect via a key or just inline
     async function retry() {
       try {
         if (!consultation) return;
-        const fullTranscript = consultation.transcript.map((s) => s.text).join('\n');
+        const transcriptText = pendingTranscript || consultation.transcript.map((s) => s.text).join('\n');
         const durationMs = (consultation.endedAt ?? Date.now()) - consultation.startedAt;
-        const generated = await geminiService.generateReport(
-          fullTranscript,
-          durationMs,
-          consultation.id,
-        );
+        const generated = await geminiService.generateReport(transcriptText, durationMs, consultation.id);
         setReport(generated);
         await storageService.saveConsultation({ ...consultation, report: generated });
       } catch {

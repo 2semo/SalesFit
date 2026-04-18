@@ -95,7 +95,12 @@ export function SessionScreen(): React.JSX.Element {
       const completedConsultation = await stopConsultation();
       router.push({
         pathname: '/report',
-        params: { data: JSON.stringify(completedConsultation) },
+        params: {
+          consultationId: completedConsultation.id,
+          startedAt: String(completedConsultation.startedAt),
+          endedAt: String(completedConsultation.endedAt ?? Date.now()),
+          transcriptText: completedConsultation.transcript.map((s) => s.text).join('\n'),
+        },
       });
     } catch (e) {
       Alert.alert('오류', '상담 종료 중 오류가 발생했습니다.');
