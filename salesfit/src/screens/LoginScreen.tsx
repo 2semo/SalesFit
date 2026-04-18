@@ -15,23 +15,27 @@ import {
 import { authService } from '../services/authService';
 
 export function LoginScreen(): React.JSX.Element {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [employeeId, setEmployeeId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async () => {
     setError(null);
+    if (!employeeId.trim()) {
+      setError('사번을 입력해주세요.');
+      return;
+    }
     setLoading(true);
     try {
-      const user = await authService.signIn(email, password);
+      const email = `${employeeId.trim()}@salesfit.local`;
+      const user = await authService.signIn(email, employeeId.trim());
       if (user.role === 'admin') {
         router.replace('/admin');
       } else {
         router.replace('/');
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : '로그인에 실패했습니다.');
+      setError('사번이 올바르지 않습니다.');
     } finally {
       setLoading(false);
     }
@@ -51,22 +55,13 @@ export function LoginScreen(): React.JSX.Element {
         <View style={styles.form}>
           <TextInput
             style={styles.input}
-            placeholder="이메일"
+            placeholder="사번 입력"
             placeholderTextColor="#6B7280"
-            value={email}
-            onChangeText={setEmail}
+            value={employeeId}
+            onChangeText={setEmployeeId}
             autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="비밀번호"
-            placeholderTextColor="#6B7280"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="password"
+            keyboardType="number-pad"
+            autoComplete="off"
           />
 
           {error !== null && <Text style={styles.errorText}>{error}</Text>}
