@@ -1,14 +1,22 @@
 import { useFocusEffect } from 'expo-router';
 import { router } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { ConsultationHistoryItem } from '../components/ConsultationHistoryItem';
+import { authService } from '../services/authService';
 import { storageService } from '../services/storageService';
 import type { StoredConsultation } from '../types';
 
 export function HomeScreen(): React.JSX.Element {
   const [consultations, setConsultations] = useState<StoredConsultation[]>([]);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    authService.getCurrentUser().then((user) => {
+      if (user) setUserName(user.name);
+    }).catch(() => undefined);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -43,7 +51,11 @@ export function HomeScreen(): React.JSX.Element {
         {/* Title */}
         <View style={styles.titleSection}>
           <Text style={styles.appTitle}>SalesFit</Text>
-          <Text style={styles.appSubtitle}>가전제품 상담 AI 코치</Text>
+          {userName ? (
+            <Text style={styles.appSubtitle}>{userName} 매니저님, 안녕하세요 👋</Text>
+          ) : (
+            <Text style={styles.appSubtitle}>가전제품 상담 AI 코치</Text>
+          )}
         </View>
 
         {/* CTA button */}
