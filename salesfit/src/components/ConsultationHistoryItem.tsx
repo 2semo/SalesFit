@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { StoredConsultation } from '../types';
+import { getCoachingLevel } from '../utils/title';
 
 interface ConsultationHistoryItemProps {
   item: StoredConsultation;
@@ -23,19 +24,13 @@ function formatDuration(ms: number): string {
   const h = Math.floor(totalSeconds / 3600);
   const min = Math.floor((totalSeconds % 3600) / 60);
   const sec = totalSeconds % 60;
-  if (h > 0) {
-    return `${h}시간 ${min}분 ${sec}초`;
-  }
+  if (h > 0) return `${h}시간 ${min}분 ${sec}초`;
   return `${min}분 ${sec}초`;
 }
 
-function getScoreColor(score: number): string {
-  if (score >= 80) return '#22c55e';
-  if (score >= 60) return '#f97316';
-  return '#ef4444';
-}
-
 export function ConsultationHistoryItem({ item, onPress }: ConsultationHistoryItemProps): React.JSX.Element {
+  const level = item.hasReport ? getCoachingLevel(item.overallScore) : null;
+
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.content}>
@@ -43,9 +38,13 @@ export function ConsultationHistoryItem({ item, onPress }: ConsultationHistoryIt
         <Text style={styles.duration}>상담 시간: {formatDuration(item.durationMs)}</Text>
       </View>
       <View style={styles.right}>
-        <Text style={[styles.score, { color: getScoreColor(item.overallScore) }]}>
-          {item.overallScore}점
-        </Text>
+        {level !== null ? (
+          <View style={[styles.badge, { backgroundColor: level.color + '22', borderColor: level.color }]}>
+            <Text style={[styles.badgeText, { color: level.color }]}>{level.emoji} {level.label}</Text>
+          </View>
+        ) : (
+          <Text style={styles.noReport}>리포트 없음</Text>
+        )}
         <Text style={styles.arrow}>→</Text>
       </View>
     </TouchableOpacity>
@@ -82,9 +81,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  score: {
-    fontSize: 16,
-    fontWeight: '700',
+  badge: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  noReport: {
+    color: '#4B5563',
+    fontSize: 12,
   },
   arrow: {
     color: '#6B7280',
