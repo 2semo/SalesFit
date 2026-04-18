@@ -1,6 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { getCoachingLevel } from '../utils/title';
+
 interface ReportSectionProps {
   icon: string;
   title: string;
@@ -8,21 +10,21 @@ interface ReportSectionProps {
   children: React.ReactNode;
 }
 
-function getScoreColor(score: number): string {
-  if (score >= 80) return '#22c55e';
-  if (score >= 60) return '#f97316';
-  return '#ef4444';
-}
-
 export function ReportSection({ icon, title, score, children }: ReportSectionProps): React.JSX.Element {
+  const level = score !== undefined ? getCoachingLevel(score) : null;
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
         <Text style={styles.icon}>{icon}</Text>
         <Text style={styles.title}>{title}</Text>
-        {score !== undefined ? (
-          <Text style={[styles.score, { color: getScoreColor(score) }]}>{score}점</Text>
-        ) : null}
+        {level !== null && (
+          <View style={[styles.badge, { backgroundColor: level.color + '22', borderColor: level.color }]}>
+            <Text style={[styles.badgeText, { color: level.color }]}>
+              {level.emoji} {level.label}
+            </Text>
+          </View>
+        )}
       </View>
       <View style={styles.content}>{children}</View>
     </View>
@@ -51,9 +53,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#E5E7EB',
   },
-  score: {
-    fontSize: 16,
-    fontWeight: '700',
+  badge: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   content: {
     gap: 4,

@@ -14,6 +14,7 @@ import { ReportSection } from '../components/ReportSection';
 import { geminiService } from '../services/geminiService';
 import { storageService } from '../services/storageService';
 import type { Consultation, ReviewReport } from '../types';
+import { getCoachingLevel } from '../utils/title';
 
 function formatDate(ts: number): string {
   const d = new Date(ts);
@@ -33,11 +34,6 @@ function formatDuration(ms: number): string {
   );
 }
 
-function getScoreColor(score: number): string {
-  if (score >= 80) return '#22c55e';
-  if (score >= 60) return '#f97316';
-  return '#ef4444';
-}
 
 export function ReportScreen(): React.JSX.Element {
   const params = useLocalSearchParams<{
@@ -59,8 +55,8 @@ export function ReportScreen(): React.JSX.Element {
   useEffect(() => {
     async function generate() {
       try {
-        if (params.consultationId) {
-          // New path: minimal params from SessionScreen
+        if (params.consultationId && params.startedAt) {
+          // New session from SessionScreen — generate report from transcript
           const id = params.consultationId;
           const startedAt = Number(params.startedAt);
           const endedAt = Number(params.endedAt ?? Date.now());
@@ -81,6 +77,15 @@ export function ReportScreen(): React.JSX.Element {
           const generated = await geminiService.generateReport(transcriptText, durationMs, id);
           setReport(generated);
           await storageService.saveConsultation({ ...base, report: generated });
+        } else if (params.consultationId) {
+          // Viewing existing consultation from HomeScreen — load from DB
+          const existing = await storageService.getConsultationById(params.consultationId);
+          if (existing?.report) {
+            setConsultation(existing);
+            setReport(existing.report);
+          } else {
+            setError('리포트를 불러올 수 없습니다.');
+          }
         } else {
           // Legacy path: full consultation JSON (admin viewing — report already loaded)
           const parsed = JSON.parse(params.data ?? '{}') as Consultation;
@@ -154,6 +159,7 @@ export function ReportScreen(): React.JSX.Element {
   const overallScore = Math.round(
     (report.customerNeedsScore + report.productExplanationScore + report.closingTimingScore) / 3,
   );
+  const overallLevel = getCoachingLevel(overallScore);
   const durationMs = (consultation.endedAt ?? Date.now()) - consultation.startedAt;
 
   return (
@@ -189,12 +195,13 @@ export function ReportScreen(): React.JSX.Element {
           <Text style={styles.metaText}>{formatDuration(durationMs)}</Text>
         </View>
 
-        {/* Overall score */}
-        <View style={styles.overallCard}>
-          <Text style={styles.overallLabel}>종합 점수</Text>
-          <Text style={[styles.overallScore, { color: getScoreColor(overallScore) }]}>
-            {overallScore}점
-          </Text>
+        {/* Overall coaching summary */}
+        <View style={[styles.overallCard, { borderLeftColor: overallLevel.color }]}>
+          <Text style={styles.overallEmoji}>{overallLevel.emoji}</Text>
+          <View style={styles.overallTextBlock}>
+            <Text style={[styles.overallLabel, { color: overallLevel.color }]}>{overallLevel.label}</Text>
+            <Text style={styles.overallMessage}>{overallLevel.message}</Text>
+          </View>
         </View>
 
         {/* Section 1: Customer Needs */}
@@ -314,17 +321,24 @@ const styles = StyleSheet.create({
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 12,
     marginBottom: 12,
+    borderLeftWidth: 4,
+  },
+  overallEmoji: {
+    fontSize: 28,
+  },
+  overallTextBlock: {
+    flex: 1,
   },
   overallLabel: {
-    color: '#E5E7EB',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  overallScore: {
-    fontSize: 28,
+    fontSize: 17,
     fontWeight: '700',
+    marginBottom: 2,
+  },
+  overallMessage: {
+    color: '#9CA3AF',
+    fontSize: 13,
   },
   loadingText: {
     color: '#9CA3AF',

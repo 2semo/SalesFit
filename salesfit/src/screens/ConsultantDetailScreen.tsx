@@ -12,7 +12,7 @@ import {
 import { adminService } from '../services/adminService';
 import { useAdminGuard } from '../hooks/useAdminGuard';
 import type { StoredConsultation } from '../types';
-import { getTitle } from '../utils/title';
+import { getCoachingLevel, getTitle } from '../utils/title';
 
 function formatDate(ts: number): string {
   const d = new Date(ts);
@@ -149,15 +149,23 @@ export function ConsultantDetailScreen(): React.JSX.Element {
               onPress={() => void handleConsultationPress(item)}
             >
               <View style={styles.rowInfo}>
+                <View style={styles.rowNameRow}>
+                  <Text style={styles.rowName}>{params.name} {getTitle(params.name)}</Text>
+                </View>
                 <Text style={styles.rowDate}>{formatDate(item.startedAt)}</Text>
                 <Text style={styles.rowDuration}>{formatDuration(item.durationMs)}</Text>
               </View>
               <View style={styles.rowRight}>
                 {item.hasReport ? (
                   <>
-                    <Text style={[styles.rowScore, { color: getScoreColor(item.overallScore) }]}>
-                      {item.overallScore}점
-                    </Text>
+                    {(() => {
+                      const lvl = getCoachingLevel(item.overallScore);
+                      return (
+                        <View style={[styles.levelBadge, { backgroundColor: lvl.color + '22', borderColor: lvl.color }]}>
+                          <Text style={[styles.levelText, { color: lvl.color }]}>{lvl.emoji} {lvl.label}</Text>
+                        </View>
+                      );
+                    })()}
                     <Text style={styles.arrowText}>›</Text>
                   </>
                 ) : (
@@ -235,6 +243,14 @@ const styles = StyleSheet.create({
   rowInfo: {
     flex: 1,
   },
+  rowNameRow: {
+    marginBottom: 2,
+  },
+  rowName: {
+    color: '#4A9EFF',
+    fontSize: 11,
+    fontWeight: '600',
+  },
   rowDate: {
     color: '#E5E7EB',
     fontSize: 14,
@@ -250,9 +266,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  rowScore: {
-    fontSize: 16,
-    fontWeight: '700',
+  levelBadge: {
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  levelText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   arrowText: {
     color: '#4B5563',
