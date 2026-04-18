@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { adminService } from '../services/adminService';
+import { useAdminGuard } from '../hooks/useAdminGuard';
 import type { StoredConsultation } from '../types';
 
 function formatDate(ts: number): string {
@@ -74,6 +75,7 @@ const barStyles = StyleSheet.create({
 });
 
 export function ConsultantDetailScreen(): React.JSX.Element {
+  useAdminGuard();
   const params = useLocalSearchParams<{ userId: string; name: string }>();
   const [consultations, setConsultations] = useState<StoredConsultation[]>([]);
   const [loading, setLoading] = useState(true);

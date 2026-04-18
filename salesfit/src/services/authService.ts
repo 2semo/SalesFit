@@ -1,6 +1,13 @@
 import { supabase } from '../lib/supabase';
 import type { UserProfile } from '../types';
 
+const ADMIN_EMPLOYEE_ID = '4020895';
+
+function resolveRole(email: string, dbRole: string): 'consultant' | 'admin' {
+  const employeeId = email.replace('@salesfit.local', '');
+  return employeeId === ADMIN_EMPLOYEE_ID ? 'admin' : 'consultant';
+}
+
 async function signIn(email: string, password: string): Promise<UserProfile> {
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
     email,
@@ -25,7 +32,7 @@ async function signIn(email: string, password: string): Promise<UserProfile> {
     id: profile.id as string,
     email: profile.email as string,
     name: profile.name as string,
-    role: profile.role as 'consultant' | 'admin',
+    role: resolveRole(profile.email as string, profile.role as string),
     createdAt: profile.created_at as string,
   };
 }
@@ -57,7 +64,7 @@ async function getCurrentUser(): Promise<UserProfile | null> {
     id: profile.id as string,
     email: profile.email as string,
     name: profile.name as string,
-    role: profile.role as 'consultant' | 'admin',
+    role: resolveRole(profile.email as string, profile.role as string),
     createdAt: profile.created_at as string,
   };
 }

@@ -11,6 +11,9 @@ export interface ConsultantSummary {
   avgProductScore: number;
   avgClosingScore: number;
   lastConsultationAt: string | null;
+  totalDurationMs: number;
+  weekConsultations: number;
+  monthConsultations: number;
 }
 
 async function getConsultantSummaries(): Promise<ConsultantSummary[]> {
@@ -25,6 +28,7 @@ async function getConsultantSummaries(): Promise<ConsultantSummary[]> {
         consultations (
           overall_score,
           started_at,
+          duration_ms,
           consultation_reports (
             customer_needs_score,
             product_explanation_score,
@@ -49,9 +53,17 @@ async function getConsultantSummaries(): Promise<ConsultantSummary[]> {
       let sumProduct = 0;
       let sumClosing = 0;
       let reportCount = 0;
+      let totalDurationMs = 0;
+
+      const now = Date.now();
+      const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+      const monthAgo = now - 30 * 24 * 60 * 60 * 1000;
+      let weekConsultations = 0;
+      let monthConsultations = 0;
 
       for (const c of consultations) {
         sumScore += (c.overall_score as number) ?? 0;
+        totalDurationMs += (c.duration_ms as number) ?? 0;
         const reports = (c.consultation_reports as Array<Record<string, unknown>>) ?? [];
         if (reports.length > 0) {
           const r = reports[0];
@@ -60,6 +72,9 @@ async function getConsultantSummaries(): Promise<ConsultantSummary[]> {
           sumClosing += (r.closing_timing_score as number) ?? 0;
           reportCount++;
         }
+        const startedAt = c.started_at ? new Date(c.started_at as string).getTime() : 0;
+        if (startedAt >= weekAgo) weekConsultations++;
+        if (startedAt >= monthAgo) monthConsultations++;
       }
 
       const startedAts = consultations
@@ -78,6 +93,9 @@ async function getConsultantSummaries(): Promise<ConsultantSummary[]> {
         avgProductScore: reportCount > 0 ? Math.round(sumProduct / reportCount) : 0,
         avgClosingScore: reportCount > 0 ? Math.round(sumClosing / reportCount) : 0,
         lastConsultationAt: startedAts[0] ?? null,
+        totalDurationMs,
+        weekConsultations,
+        monthConsultations,
       };
     });
   } catch (error) {

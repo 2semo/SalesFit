@@ -11,10 +11,21 @@ import {
 
 import { adminService, type ConsultantSummary } from '../services/adminService';
 import { authService } from '../services/authService';
+import { useAdminGuard } from '../hooks/useAdminGuard';
+
+type Tab = 'performance' | 'usage';
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function formatDuration(ms: number): string {
+  const totalMin = Math.floor(ms / 60000);
+  if (totalMin < 60) return `${totalMin}분`;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return m > 0 ? `${h}시간 ${m}분` : `${h}시간`;
 }
 
 function getScoreColor(score: number): string {
@@ -23,9 +34,19 @@ function getScoreColor(score: number): string {
   return '#ef4444';
 }
 
+function getActivityStatus(lastAt: string | null): { label: string; color: string } {
+  if (!lastAt) return { label: '미사용', color: '#4B5563' };
+  const diffDays = Math.floor((Date.now() - new Date(lastAt).getTime()) / 86400000);
+  if (diffDays <= 7) return { label: '활성', color: '#22c55e' };
+  if (diffDays <= 30) return { label: '보통', color: '#f97316' };
+  return { label: '비활성', color: '#ef4444' };
+}
+
 export function AdminDashboardScreen(): React.JSX.Element {
+  useAdminGuard();
   const [summaries, setSummaries] = useState<ConsultantSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<Tab>('performance');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -48,6 +69,9 @@ export function AdminDashboardScreen(): React.JSX.Element {
     summaries.length > 0
       ? Math.round(summaries.reduce((s, c) => s + c.avgScore, 0) / summaries.length)
       : 0;
+  const activeCount = summaries.filter(
+    (c) => c.lastConsultationAt && Date.now() - new Date(c.lastConsultationAt).getTime() <= 7 * 86400000
+  ).length;
 
   return (
     <View style={styles.container}>
@@ -75,47 +99,127 @@ export function AdminDashboardScreen(): React.JSX.Element {
             <Text style={styles.summaryValue}>{summaries.length}</Text>
             <Text style={styles.summaryLabel}>상담원</Text>
           </View>
+          <View style={styles.summaryCard}>
+            <Text style={[styles.summaryValue, { color: '#22c55e' }]}>{activeCount}</Text>
+            <Text style={styles.summaryLabel}>활성 (7일)</Text>
+          </View>
         </View>
 
-        <Text style={styles.sectionTitle}>상담원별 현황</Text>
+        <View style={styles.tabRow}>
+          <TouchableOpacity
+            style={[styles.tabBtn, tab === 'performance' && styles.tabBtnActive]}
+            onPress={() => setTab('performance')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.tabText, tab === 'performance' && styles.tabTextActive]}>
+              성과 현황
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tabBtn, tab === 'usage' && styles.tabBtnActive]}
+            onPress={() => setTab('usage')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.tabText, tab === 'usage' && styles.tabTextActive]}>
+              사용 현황
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {loading ? (
           <ActivityIndicator color="#4A9EFF" style={{ marginTop: 32 }} />
         ) : summaries.length === 0 ? (
           <Text style={styles.emptyText}>등록된 상담원이 없습니다.</Text>
-        ) : (
-          summaries.map((consultant) => (
-            <TouchableOpacity
-              key={consultant.userId}
-              style={styles.consultantRow}
-              activeOpacity={0.75}
-              onPress={() =>
-                router.push({
-                  pathname: '/admin-detail',
-                  params: {
-                    userId: consultant.userId,
-                    name: consultant.name,
-                  },
-                })
-              }
-            >
-              <View style={styles.consultantInfo}>
-                <Text style={styles.consultantName}>{consultant.name}</Text>
-                {consultant.lastConsultationAt && (
-                  <Text style={styles.consultantMeta}>
-                    최근 {formatDate(consultant.lastConsultationAt)}
+        ) : tab === 'performance' ? (
+          <>
+            <Text style={styles.sectionTitle}>상담원별 성과</Text>
+            {summaries.map((consultant) => (
+              <TouchableOpacity
+                key={consultant.userId}
+                style={styles.consultantRow}
+                activeOpacity={0.75}
+                onPress={() =>
+                  router.push({
+                    pathname: '/admin-detail',
+                    params: {
+                      userId: consultant.userId,
+                      name: consultant.name,
+                    },
+                  })
+                }
+              >
+                <View style={styles.consultantInfo}>
+                  <Text style={styles.consultantName}>{consultant.name}</Text>
+                  {consultant.lastConsultationAt && (
+                    <Text style={styles.consultantMeta}>
+                      최근 {formatDate(consultant.lastConsultationAt)}
+                    </Text>
+                  )}
+                </View>
+                <View style={styles.consultantStats}>
+                  <Text style={styles.statText}>{consultant.totalConsultations}건</Text>
+                  <Text style={[styles.statScore, { color: getScoreColor(consultant.avgScore) }]}>
+                    {consultant.avgScore}점
                   </Text>
-                )}
-              </View>
-              <View style={styles.consultantStats}>
-                <Text style={styles.statText}>{consultant.totalConsultations}건</Text>
-                <Text style={[styles.statScore, { color: getScoreColor(consultant.avgScore) }]}>
-                  {consultant.avgScore}점
-                </Text>
-                <Text style={styles.arrowText}>›</Text>
-              </View>
-            </TouchableOpacity>
-          ))
+                  <Text style={styles.arrowText}>›</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </>
+        ) : (
+          <>
+            <Text style={styles.sectionTitle}>이용자별 사용 현황</Text>
+            {summaries
+              .slice()
+              .sort((a, b) => {
+                const aLast = a.lastConsultationAt ? new Date(a.lastConsultationAt).getTime() : 0;
+                const bLast = b.lastConsultationAt ? new Date(b.lastConsultationAt).getTime() : 0;
+                return bLast - aLast;
+              })
+              .map((consultant) => {
+                const status = getActivityStatus(consultant.lastConsultationAt);
+                return (
+                  <View key={consultant.userId} style={styles.usageRow}>
+                    <View style={styles.usageTop}>
+                      <Text style={styles.consultantName}>{consultant.name}</Text>
+                      <View style={[styles.statusBadge, { backgroundColor: status.color + '22', borderColor: status.color }]}>
+                        <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.usageStats}>
+                      <View style={styles.usageStat}>
+                        <Text style={styles.usageStatValue}>{consultant.totalConsultations}</Text>
+                        <Text style={styles.usageStatLabel}>총 상담</Text>
+                      </View>
+                      <View style={styles.usageDivider} />
+                      <View style={styles.usageStat}>
+                        <Text style={styles.usageStatValue}>{consultant.weekConsultations}</Text>
+                        <Text style={styles.usageStatLabel}>이번 주</Text>
+                      </View>
+                      <View style={styles.usageDivider} />
+                      <View style={styles.usageStat}>
+                        <Text style={styles.usageStatValue}>{consultant.monthConsultations}</Text>
+                        <Text style={styles.usageStatLabel}>이번 달</Text>
+                      </View>
+                      <View style={styles.usageDivider} />
+                      <View style={styles.usageStat}>
+                        <Text style={styles.usageStatValue}>
+                          {consultant.totalDurationMs > 0 ? formatDuration(consultant.totalDurationMs) : '-'}
+                        </Text>
+                        <Text style={styles.usageStatLabel}>총 시간</Text>
+                      </View>
+                    </View>
+
+                    {consultant.lastConsultationAt && (
+                      <Text style={styles.lastSeen}>
+                        마지막 이용: {formatDate(consultant.lastConsultationAt)}
+                      </Text>
+                    )}
+                  </View>
+                );
+              })}
+          </>
         )}
       </ScrollView>
     </View>
@@ -164,25 +268,51 @@ const styles = StyleSheet.create({
   },
   summaryRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 24,
+    gap: 8,
+    marginBottom: 20,
   },
   summaryCard: {
     flex: 1,
     backgroundColor: '#1E1E1E',
     borderRadius: 12,
-    padding: 14,
+    padding: 12,
     alignItems: 'center',
   },
   summaryValue: {
     color: '#E5E7EB',
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
   },
   summaryLabel: {
     color: '#6B7280',
-    fontSize: 11,
+    fontSize: 10,
     marginTop: 2,
+    textAlign: 'center',
+  },
+  tabRow: {
+    flexDirection: 'row',
+    backgroundColor: '#1E1E1E',
+    borderRadius: 10,
+    padding: 3,
+    marginBottom: 16,
+  },
+  tabBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  tabBtnActive: {
+    backgroundColor: '#2C2C2C',
+  },
+  tabText: {
+    color: '#6B7280',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  tabTextActive: {
+    color: '#E5E7EB',
+    fontWeight: '700',
   },
   consultantRow: {
     flexDirection: 'row',
@@ -228,5 +358,58 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     marginTop: 32,
+  },
+  usageRow: {
+    backgroundColor: '#1E1E1E',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 8,
+  },
+  usageTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  statusBadge: {
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  usageStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2C2C2C',
+    borderRadius: 8,
+    paddingVertical: 10,
+    marginBottom: 8,
+  },
+  usageStat: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  usageStatValue: {
+    color: '#E5E7EB',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  usageStatLabel: {
+    color: '#6B7280',
+    fontSize: 10,
+    marginTop: 2,
+  },
+  usageDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: '#3C3C3C',
+  },
+  lastSeen: {
+    color: '#4B5563',
+    fontSize: 11,
   },
 });
