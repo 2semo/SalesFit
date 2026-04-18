@@ -110,20 +110,11 @@ ${consultationContext || '(상담 내용 없음)'}`;
     durationMs: number,
     consultationId: string,
   ): Promise<ReviewReport> {
-    const defaultReport: ReviewReport = {
-      consultationId,
-      customerNeedsScore: 50,
-      customerNeedsAnalysis: '분석 실패',
-      recommendedScripts: [],
-      productExplanationScore: 50,
-      productExplanationFeedback: '분석 실패',
-      closingTimingScore: 50,
-      closingTimingFeedback: '분석 실패',
-      improvementPoints: [],
-      suggestions: [],
-      generatedAt: Date.now(),
-      totalDurationMs: durationMs,
-    };
+    if (!fullTranscript.trim()) {
+      throw new Error(
+        '녹음된 상담 내용이 없습니다.\n\n가능한 원인:\n• 녹음 중 화면이 꺼짐 (대기모드)\n• 마이크 권한 미허용\n• 녹음 시간이 너무 짧음',
+      );
+    }
 
     try {
       const prompt = `당신은 롯데하이마트 가전제품 영업 코치입니다. 아래 제품 가이드와 상담 대화를 분석해 복기 리포트를 JSON으로 반환하세요.
@@ -151,27 +142,44 @@ ${fullTranscript}
       const text = result.response.text().trim();
 
       const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) return defaultReport;
+      if (!jsonMatch) {
+        throw new Error('AI 응답 형식이 올바르지 않습니다. 다시 시도해주세요.');
+      }
 
       const parsed = JSON.parse(jsonMatch[0]) as Partial<ReviewReport>;
 
       return {
         consultationId,
         customerNeedsScore: parsed.customerNeedsScore ?? 50,
-        customerNeedsAnalysis: parsed.customerNeedsAnalysis ?? '분석 실패',
+        customerNeedsAnalysis: parsed.customerNeedsAnalysis ?? '-',
         recommendedScripts: parsed.recommendedScripts ?? [],
         productExplanationScore: parsed.productExplanationScore ?? 50,
-        productExplanationFeedback: parsed.productExplanationFeedback ?? '분석 실패',
+        productExplanationFeedback: parsed.productExplanationFeedback ?? '-',
         closingTimingScore: parsed.closingTimingScore ?? 50,
-        closingTimingFeedback: parsed.closingTimingFeedback ?? '분석 실패',
+        closingTimingFeedback: parsed.closingTimingFeedback ?? '-',
         improvementPoints: parsed.improvementPoints ?? [],
         suggestions: parsed.suggestions ?? [],
         generatedAt: Date.now(),
         totalDurationMs: durationMs,
       };
     } catch (error) {
+      if (error instanceof Error && (
+        error.message.includes('녹음된') ||
+        error.message.includes('AI 응답 형식')
+      )) {
+        throw error;
+      }
+
       console.error('GeminiService: generateReport error', error);
-      return defaultReport;
+
+      const msg = error instanceof Error ? error.message : '';
+      if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
+        throw new Error('AI 분석 한도를 초과했습니다. 잠시 후 다시 시도해주세요.');
+      }
+      if (msg.toLowerCase().includes('network') || msg.includes('fetch') || msg.includes('Failed to fetch')) {
+        throw new Error('네트워크 연결을 확인해주세요.');
+      }
+      throw new Error('AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     }
   }
 }

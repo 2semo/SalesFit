@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useKeepAwake } from 'expo-keep-awake';
 import React, { useCallback, useEffect, useRef } from 'react';
 import {
   Alert,
@@ -30,6 +31,8 @@ function formatTime(ms: number): string {
 export function SessionScreen(): React.JSX.Element {
   const { isRecording, isProcessing, consultation, elapsedMs, error, startConsultation, stopConsultation } =
     useConsultation();
+
+  useKeepAwake();
 
   const scrollViewRef = useRef<ScrollView>(null);
   const recordingDotOpacity = useRef(new Animated.Value(1)).current;

@@ -103,7 +103,7 @@ export function ReportScreen(): React.JSX.Element {
           }
         }
       } catch (e) {
-        setError('리포트 생성에 실패했습니다. 다시 시도해주세요.');
+        setError(e instanceof Error ? e.message : '리포트 생성에 실패했습니다. 다시 시도해주세요.');
       } finally {
         setLoading(false);
       }
@@ -125,8 +125,8 @@ export function ReportScreen(): React.JSX.Element {
         const generated = await geminiService.generateReport(transcriptText, durationMs, consultation.id);
         setReport(generated);
         await storageService.saveConsultation({ ...consultation, report: generated });
-      } catch {
-        setError('리포트 생성에 실패했습니다. 다시 시도해주세요.');
+      } catch (e) {
+        setError(e instanceof Error ? e.message : '리포트 생성에 실패했습니다. 다시 시도해주세요.');
       } finally {
         setLoading(false);
       }
