@@ -43,8 +43,8 @@ export function HomeScreen(): React.JSX.Element {
   }, []);
 
   const handlePressItem = useCallback((id: string) => {
-    router.push({ pathname: '/report', params: { consultationId: id } });
-  }, []);
+    router.push({ pathname: '/report', params: { consultationId: id, consultantName: userName } });
+  }, [userName]);
 
   return (
     <SafeAreaView style={styles.safeArea}>

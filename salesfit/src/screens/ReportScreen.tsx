@@ -14,7 +14,7 @@ import { ReportSection } from '../components/ReportSection';
 import { geminiService } from '../services/geminiService';
 import { storageService } from '../services/storageService';
 import type { Consultation, ReviewReport } from '../types';
-import { getCoachingLevel } from '../utils/title';
+import { getCoachingLevel, getTitle } from '../utils/title';
 
 function formatDate(ts: number): string {
   const d = new Date(ts);
@@ -44,6 +44,7 @@ export function ReportScreen(): React.JSX.Element {
     transcriptText?: string;
     // Legacy format (from admin viewing — full JSON with pre-loaded report)
     data?: string;
+    consultantName?: string;
   }>();
   const [report, setReport] = useState<ReviewReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -189,6 +190,9 @@ export function ReportScreen(): React.JSX.Element {
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         {/* Meta info */}
+        {params.consultantName ? (
+          <Text style={styles.consultantName}>{params.consultantName} {getTitle(params.consultantName)}</Text>
+        ) : null}
         <View style={styles.metaRow}>
           <Text style={styles.metaText}>{formatDate(consultation.startedAt)}</Text>
           <Text style={styles.metaSep}>|</Text>
@@ -300,6 +304,12 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 32,
     gap: 0,
+  },
+  consultantName: {
+    color: '#4A9EFF',
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 4,
   },
   metaRow: {
     flexDirection: 'row',

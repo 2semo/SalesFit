@@ -110,7 +110,10 @@ export function ConsultantDetailScreen(): React.JSX.Element {
     if (!report) return;
     router.push({
       pathname: '/report',
-      params: { data: JSON.stringify({ id: item.id, startedAt: item.startedAt, endedAt: item.endedAt, status: 'completed', transcript: [], coachingMessages: [], report }) },
+      params: {
+        data: JSON.stringify({ id: item.id, startedAt: item.startedAt, endedAt: item.endedAt, status: 'completed', transcript: [], coachingMessages: [], report }),
+        consultantName: params.name,
+      },
     });
   };
 
