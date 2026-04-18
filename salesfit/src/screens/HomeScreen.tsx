@@ -49,13 +49,18 @@ export function HomeScreen(): React.JSX.Element {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         {/* Title */}
-        <View style={styles.titleSection}>
-          <Text style={styles.appTitle}>SalesFit</Text>
-          {userName ? (
-            <Text style={styles.appSubtitle}>{userName} 매니저님, 안녕하세요 👋</Text>
-          ) : (
-            <Text style={styles.appSubtitle}>가전제품 상담 AI 코치</Text>
-          )}
+        <View style={styles.titleRow}>
+          <View style={styles.titleSection}>
+            <Text style={styles.appTitle}>SalesFit</Text>
+            {userName ? (
+              <Text style={styles.appSubtitle}>{userName} 매니저님, 안녕하세요 👋</Text>
+            ) : (
+              <Text style={styles.appSubtitle}>가전제품 상담 AI 코치</Text>
+            )}
+          </View>
+          <TouchableOpacity onPress={() => router.push('/help')} activeOpacity={0.7} style={styles.helpBtn}>
+            <Text style={styles.helpBtnText}>?</Text>
+          </TouchableOpacity>
         </View>
 
         {/* CTA button */}
@@ -97,8 +102,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 24,
   },
-  titleSection: {
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
     marginBottom: 32,
+  },
+  titleSection: {
+    flex: 1,
   },
   appTitle: {
     color: '#FFFFFF',
@@ -139,6 +150,20 @@ const styles = StyleSheet.create({
   emptyText: {
     color: '#6B7280',
     fontSize: 14,
+  },
+  helpBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#2C2C2C',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+  },
+  helpBtnText: {
+    color: '#9CA3AF',
+    fontSize: 15,
+    fontWeight: '700',
   },
   listContent: {
     paddingBottom: 32,
