@@ -69,6 +69,9 @@ class StorageService {
 
   async getConsultations(): Promise<StoredConsultation[]> {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
       const { data, error } = await supabase
         .from('consultations')
         .select(
@@ -83,6 +86,7 @@ class StorageService {
           )
         `,
         )
+        .eq('user_id', user.id)
         .order('started_at', { ascending: false });
 
       if (error) {

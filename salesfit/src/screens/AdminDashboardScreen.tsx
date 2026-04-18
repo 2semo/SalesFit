@@ -12,7 +12,7 @@ import {
 import { adminService, type ConsultantSummary } from '../services/adminService';
 import { authService } from '../services/authService';
 import { useAdminGuard } from '../hooks/useAdminGuard';
-import { getTitle } from '../utils/title';
+import { getCoachingLevel, getTitle } from '../utils/title';
 
 type Tab = 'performance' | 'usage';
 
@@ -29,11 +29,6 @@ function formatDuration(ms: number): string {
   return m > 0 ? `${h}시간 ${m}분` : `${h}시간`;
 }
 
-function getScoreColor(score: number): string {
-  if (score >= 80) return '#22c55e';
-  if (score >= 60) return '#f97316';
-  return '#ef4444';
-}
 
 function getActivityStatus(lastAt: string | null): { label: string; color: string } {
   if (!lastAt) return { label: '미사용', color: '#4B5563' };
@@ -91,10 +86,10 @@ export function AdminDashboardScreen(): React.JSX.Element {
             <Text style={styles.summaryLabel}>총 상담</Text>
           </View>
           <View style={styles.summaryCard}>
-            <Text style={[styles.summaryValue, { color: getScoreColor(avgScore) }]}>
-              {avgScore}점
+            <Text style={[styles.summaryValue, { color: getCoachingLevel(avgScore).color, fontSize: 14 }]}>
+              {getCoachingLevel(avgScore).emoji} {getCoachingLevel(avgScore).label}
             </Text>
-            <Text style={styles.summaryLabel}>평균 점수</Text>
+            <Text style={styles.summaryLabel}>팀 전체</Text>
           </View>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryValue}>{summaries.length}</Text>
@@ -159,9 +154,13 @@ export function AdminDashboardScreen(): React.JSX.Element {
                 </View>
                 <View style={styles.consultantStats}>
                   <Text style={styles.statText}>{consultant.totalConsultations}건</Text>
-                  <Text style={[styles.statScore, { color: getScoreColor(consultant.avgScore) }]}>
-                    {consultant.avgScore}점
-                  </Text>
+                  {consultant.totalConsultations > 0 && (
+                    <View style={[styles.levelBadge, { backgroundColor: getCoachingLevel(consultant.avgScore).color + '22', borderColor: getCoachingLevel(consultant.avgScore).color }]}>
+                      <Text style={[styles.levelText, { color: getCoachingLevel(consultant.avgScore).color }]}>
+                        {getCoachingLevel(consultant.avgScore).emoji} {getCoachingLevel(consultant.avgScore).label}
+                      </Text>
+                    </View>
+                  )}
                   <Text style={styles.arrowText}>›</Text>
                 </View>
               </TouchableOpacity>
@@ -359,9 +358,15 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     fontSize: 13,
   },
-  statScore: {
-    fontSize: 15,
-    fontWeight: '700',
+  levelBadge: {
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  levelText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   arrowText: {
     color: '#4B5563',
