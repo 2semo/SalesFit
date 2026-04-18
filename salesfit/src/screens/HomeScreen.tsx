@@ -15,7 +15,12 @@ export function HomeScreen(): React.JSX.Element {
 
   useEffect(() => {
     authService.getCurrentUser().then((user) => {
-      if (user) setUserName(user.name);
+      if (!user) return;
+      if (user.role === 'admin') {
+        router.replace('/admin');
+        return;
+      }
+      setUserName(user.name);
     }).catch(() => undefined);
   }, []);
 
