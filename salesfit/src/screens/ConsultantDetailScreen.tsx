@@ -12,6 +12,7 @@ import {
 import { adminService } from '../services/adminService';
 import { useAdminGuard } from '../hooks/useAdminGuard';
 import type { StoredConsultation } from '../types';
+import { getTitle } from '../utils/title';
 
 function formatDate(ts: number): string {
   const d = new Date(ts);
@@ -119,7 +120,7 @@ export function ConsultantDetailScreen(): React.JSX.Element {
         <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
           <Text style={styles.backText}>← 뒤로</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{params.name}</Text>
+        <Text style={styles.headerTitle}>{params.name} {getTitle(params.name)}</Text>
         <View style={{ width: 48 }} />
       </View>
 

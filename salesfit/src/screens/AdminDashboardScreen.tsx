@@ -12,6 +12,7 @@ import {
 import { adminService, type ConsultantSummary } from '../services/adminService';
 import { authService } from '../services/authService';
 import { useAdminGuard } from '../hooks/useAdminGuard';
+import { getTitle } from '../utils/title';
 
 type Tab = 'performance' | 'usage';
 
@@ -149,7 +150,7 @@ export function AdminDashboardScreen(): React.JSX.Element {
                 }
               >
                 <View style={styles.consultantInfo}>
-                  <Text style={styles.consultantName}>{consultant.name}</Text>
+                  <Text style={styles.consultantName}>{consultant.name} {getTitle(consultant.name)}</Text>
                   {consultant.lastConsultationAt && (
                     <Text style={styles.consultantMeta}>
                       최근 {formatDate(consultant.lastConsultationAt)}
@@ -179,9 +180,19 @@ export function AdminDashboardScreen(): React.JSX.Element {
               .map((consultant) => {
                 const status = getActivityStatus(consultant.lastConsultationAt);
                 return (
-                  <View key={consultant.userId} style={styles.usageRow}>
+                  <TouchableOpacity
+                    key={consultant.userId}
+                    style={styles.usageRow}
+                    activeOpacity={0.75}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/admin-detail',
+                        params: { userId: consultant.userId, name: consultant.name },
+                      })
+                    }
+                  >
                     <View style={styles.usageTop}>
-                      <Text style={styles.consultantName}>{consultant.name}</Text>
+                      <Text style={styles.consultantName}>{consultant.name} {getTitle(consultant.name)}</Text>
                       <View style={[styles.statusBadge, { backgroundColor: status.color + '22', borderColor: status.color }]}>
                         <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
                       </View>
@@ -211,12 +222,15 @@ export function AdminDashboardScreen(): React.JSX.Element {
                       </View>
                     </View>
 
-                    {consultant.lastConsultationAt && (
-                      <Text style={styles.lastSeen}>
-                        마지막 이용: {formatDate(consultant.lastConsultationAt)}
-                      </Text>
-                    )}
-                  </View>
+                    <View style={styles.usageBottom}>
+                      {consultant.lastConsultationAt && (
+                        <Text style={styles.lastSeen}>
+                          마지막 이용: {formatDate(consultant.lastConsultationAt)}
+                        </Text>
+                      )}
+                      <Text style={styles.arrowText}>›</Text>
+                    </View>
+                  </TouchableOpacity>
                 );
               })}
           </>
@@ -407,6 +421,11 @@ const styles = StyleSheet.create({
     width: 1,
     height: 28,
     backgroundColor: '#3C3C3C',
+  },
+  usageBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   lastSeen: {
     color: '#4B5563',

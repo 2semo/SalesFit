@@ -7,6 +7,7 @@ import { ConsultationHistoryItem } from '../components/ConsultationHistoryItem';
 import { authService } from '../services/authService';
 import { storageService } from '../services/storageService';
 import type { StoredConsultation } from '../types';
+import { getTitle } from '../utils/title';
 
 export function HomeScreen(): React.JSX.Element {
   const [consultations, setConsultations] = useState<StoredConsultation[]>([]);
@@ -53,7 +54,7 @@ export function HomeScreen(): React.JSX.Element {
           <View style={styles.titleSection}>
             <Text style={styles.appTitle}>SalesFit</Text>
             {userName ? (
-              <Text style={styles.appSubtitle}>{userName} 매니저님, 안녕하세요 👋</Text>
+              <Text style={styles.appSubtitle}>{userName} {getTitle(userName)}, 안녕하세요 👋</Text>
             ) : (
               <Text style={styles.appSubtitle}>가전제품 상담 AI 코치</Text>
             )}
