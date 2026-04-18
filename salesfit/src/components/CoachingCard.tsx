@@ -15,6 +15,7 @@ const TYPE_CONFIG: Record<
   product: { icon: '📦', color: '#22c55e', label: '제품 설명' },
   closing: { icon: '🤝', color: '#f97316', label: '클로징' },
   improvement: { icon: '💡', color: '#eab308', label: '개선' },
+  recommend: { icon: '⭐', color: '#a855f7', label: '모델 추천' },
 };
 
 export function CoachingCard({ message }: CoachingCardProps): React.JSX.Element {

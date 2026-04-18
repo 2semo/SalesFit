@@ -49,10 +49,15 @@ ${PRODUCT_GUIDE}
 ${transcript}
 
 반환 형식 (JSON 배열만 반환, 다른 텍스트 없이):
-[{ "type": "needs"|"product"|"closing"|"improvement", "title": "...", "message": "...", "suggestion": "..." }]
+[{ "type": "needs"|"product"|"closing"|"improvement"|"recommend", "title": "...", "message": "...", "suggestion": "..." }]
 
-- type 기준: needs(고객니즈파악), product(제품설명/추천), closing(클로징기회), improvement(개선필요)
-- suggestion은 가이드의 실제 모델명/가격/혜택을 활용한 구체적인 멘트로 작성
+- type 기준:
+  - needs: 고객 니즈 파악 코칭
+  - product: 제품 설명 방법 코칭
+  - closing: 클로징 기회 포착
+  - improvement: 개선 필요 사항
+  - recommend: 상담 맥락에 딱 맞는 중점모델 추천 (고객이 특정 제품 카테고리에 관심을 보일 때만 사용)
+- recommend 타입은 반드시 가이드의 실제 모델명, 가격, 핵심 혜택을 title에 포함하고 suggestion에 구체적 추천 멘트 작성
 - 코칭할 포인트가 없으면 [] 반환.`;
 
       const result = await model.generateContent(prompt);
@@ -79,6 +84,24 @@ ${transcript}
     } catch (error) {
       console.error('GeminiService: getCoachingTips error', error);
       return [];
+    }
+  }
+
+  async chat(userMessage: string, consultationContext: string): Promise<string> {
+    try {
+      const systemPrompt = `당신은 롯데하이마트 가전제품 영업 전문 AI 코치입니다. 아래 제품 가이드와 상담 내용을 바탕으로 매니저와 대화하며 실질적인 조언을 드립니다. 반말하지 말고 존댓말을 사용하세요. 답변은 간결하고 실용적으로 작성하세요.
+
+[이번 주 제품 가이드]
+${PRODUCT_GUIDE}
+
+[현재 상담 내용]
+${consultationContext || '(상담 내용 없음)'}`;
+
+      const result = await model.generateContent(`${systemPrompt}\n\n[매니저 질문]\n${userMessage}`);
+      return result.response.text().trim();
+    } catch (error) {
+      console.error('GeminiService: chat error', error);
+      return '죄송합니다, 잠시 후 다시 시도해 주세요.';
     }
   }
 

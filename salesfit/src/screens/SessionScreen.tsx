@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 
+import { AIChatPanel } from '../components/AIChatPanel';
 import { CoachingCard } from '../components/CoachingCard';
 import { useConsultation } from '../hooks/useConsultation';
 import type { CoachingMessage } from '../types';
@@ -34,6 +35,7 @@ export function SessionScreen(): React.JSX.Element {
   const recordingDotOpacity = useRef(new Animated.Value(1)).current;
   const animMap = useRef<Map<string, Animated.Value>>(new Map());
   const prevCoachingCountRef = useRef(0);
+  const [chatOpen, setChatOpen] = React.useState(false);
 
   // Start recording on mount
   useEffect(() => {
@@ -147,10 +149,21 @@ export function SessionScreen(): React.JSX.Element {
         })}
       </View>
 
-      {/* Stop button */}
-      <TouchableOpacity style={styles.stopButton} onPress={() => void handleStop()} activeOpacity={0.8}>
-        <Text style={styles.stopButtonText}>상담 종료</Text>
-      </TouchableOpacity>
+      {/* Bottom buttons */}
+      <View style={styles.bottomRow}>
+        <TouchableOpacity style={styles.chatButton} onPress={() => setChatOpen(true)} activeOpacity={0.8}>
+          <Text style={styles.chatButtonText}>💬 AI 대화</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.stopButton} onPress={() => void handleStop()} activeOpacity={0.8}>
+          <Text style={styles.stopButtonText}>상담 종료</Text>
+        </TouchableOpacity>
+      </View>
+
+      <AIChatPanel
+        visible={chatOpen}
+        onClose={() => setChatOpen(false)}
+        consultationContext={(consultation?.transcript ?? []).map((s) => s.text).join('\n')}
+      />
     </View>
   );
 }
@@ -227,11 +240,28 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 13,
   },
+  bottomRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingBottom: 32,
+    paddingTop: 8,
+    gap: 10,
+  },
+  chatButton: {
+    flex: 1,
+    backgroundColor: '#2C2C2C',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  chatButtonText: {
+    color: '#E5E7EB',
+    fontSize: 15,
+    fontWeight: '600',
+  },
   stopButton: {
+    flex: 2,
     backgroundColor: '#ef4444',
-    marginHorizontal: 16,
-    marginBottom: 32,
-    marginTop: 8,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

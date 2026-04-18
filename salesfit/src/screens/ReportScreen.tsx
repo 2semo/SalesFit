@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 
+import { AIChatPanel } from '../components/AIChatPanel';
 import { ReportSection } from '../components/ReportSection';
 import { geminiService } from '../services/geminiService';
 import { storageService } from '../services/storageService';
@@ -44,6 +45,7 @@ export function ReportScreen(): React.JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [consultation, setConsultation] = useState<Consultation | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     async function generate() {
@@ -136,6 +138,20 @@ export function ReportScreen(): React.JSX.Element {
         <Text style={styles.headerTitle}>상담 리포트</Text>
         <View style={styles.headerSpacer} />
       </View>
+
+      <TouchableOpacity style={styles.chatFab} onPress={() => setChatOpen(true)} activeOpacity={0.8}>
+        <Text style={styles.chatFabText}>💬</Text>
+      </TouchableOpacity>
+
+      <AIChatPanel
+        visible={chatOpen}
+        onClose={() => setChatOpen(false)}
+        consultationContext={
+          report
+            ? `[리포트 요약]\n고객니즈: ${report.customerNeedsScore}점 - ${report.customerNeedsAnalysis}\n제품설명: ${report.productExplanationScore}점 - ${report.productExplanationFeedback}\n클로징: ${report.closingTimingScore}점 - ${report.closingTimingFeedback}\n개선점: ${report.improvementPoints.join(', ')}`
+            : ''
+        }
+      />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         {/* Meta info */}
@@ -309,6 +325,26 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: '#6B7280',
     fontSize: 14,
+  },
+  chatFab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 20,
+    zIndex: 10,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#4A9EFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  chatFabText: {
+    fontSize: 22,
   },
   bodyText: {
     color: '#D1D5DB',

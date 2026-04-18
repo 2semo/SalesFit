@@ -5,7 +5,14 @@ export interface TranscriptSegment {
   chunkIndex: number;
 }
 
-export type CoachingType = 'needs' | 'product' | 'closing' | 'improvement';
+export type CoachingType = 'needs' | 'product' | 'closing' | 'improvement' | 'recommend';
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'ai';
+  text: string;
+  timestamp: number;
+}
 
 export interface CoachingMessage {
   id: string;
